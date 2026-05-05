@@ -28,13 +28,13 @@
 | speechiness_% | 0 |
 
 ## Model Comparison
-| Model | Accuracy | Precision (Macro) | Recall (Macro) | F1-score (Macro) |
-| --- | --- | --- | --- | --- |
-| Logistic Regression | 0.7696 | 0.774 | 0.7678 | 0.7678 |
-| Support Vector Machine (SVM) | 0.7696 | 0.7756 | 0.7676 | 0.7673 |
-| Perceptron | 0.712 | 0.7145 | 0.7103 | 0.71 |
-| K-Nearest Neighbors (KNN) | 0.6754 | 0.6752 | 0.6749 | 0.675 |
-| Decision Tree | 0.6597 | 0.6594 | 0.6593 | 0.6593 |
+| Model | Accuracy | Precision (Macro) | Recall (Macro) | F1-score (Macro) | AUC |
+| --- | --- | --- | --- | --- | --- |
+| Logistic Regression | 0.7696 | 0.774 | 0.7678 | 0.7678 | 0.8308 |
+| Support Vector Machine (SVM) | 0.7696 | 0.7756 | 0.7676 | 0.7673 | 0.8001 |
+| Perceptron | 0.712 | 0.7145 | 0.7103 | 0.71 | 0.7677 |
+| K-Nearest Neighbors (KNN) | 0.6754 | 0.6752 | 0.6749 | 0.675 | 0.723 |
+| Decision Tree | 0.6597 | 0.6594 | 0.6593 | 0.6593 | 0.6593 |
 
 ## Confusion Matrices
 ### Decision Tree
@@ -68,5 +68,5 @@
 | Actual Low Valence | 32 | 61 |
 
 ## Conclusion
-- Best model: `Logistic Regression` with Accuracy `0.7696` and Macro F1 `0.7678`.
+- Best model: `Logistic Regression` with Accuracy `0.7696` Macro F1 `0.7678`, and AUC `0.8308`.
 - These audio features show moderate predictive power for valence, but they are not strong enough for highly reliable emotion classification on their own.

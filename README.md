@@ -2,11 +2,11 @@
 
 ## 2026/5/5 新增內容
 
-### 新增資料夾
+### 資料夾
 
 - `Group Activity/`
 
-### 新增檔案
+### 檔案
 
 - `Group Activity/ensemble_learning_evaluation.py`
 - `Group Activity/ensemble_learning_results.csv`
@@ -15,12 +15,19 @@
 - `Group Activity/pca_lda_evaluation.py`
 - `Group Activity/pca_lda_results.csv`
 
+### 增加 AUC
+
+- `music_valence_classification.py`
+- `valence_classification_metrics.csv`
+- `valence_classification_report.md`
+
 ## 內容說明
 
 - `ensemble_learning_evaluation.py`：比較不同集成學習模型
 - `hyperparameter_tuning_evaluation.py`：測試超參數調整結果
 - `pca_lda_evaluation.py`：測試 PCA 和 LDA 降維結果
 - `.csv` 檔案：存放各個實驗的結果
+- `music_valence_classification.py`：加入 AUC 計算
 
 ## 邱Output
 

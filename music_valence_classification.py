@@ -9,7 +9,14 @@ os.environ.setdefault("LOKY_MAX_CPU_COUNT", "1")
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression, Perceptron
-from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, precision_score, recall_score
+from sklearn.metrics import (
+    accuracy_score,
+    confusion_matrix,
+    f1_score,
+    precision_score,
+    recall_score,
+    roc_auc_score,
+)
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
@@ -59,6 +66,7 @@ TEST_SIZE = 0.2
 RANDOM_STATE = 42
 METRICS_OUTPUT_PATH = Path("valence_classification_metrics.csv")
 REPORT_OUTPUT_PATH = Path("valence_classification_report.md")
+POSITIVE_LABEL = "High Valence"
 
 
 def format_markdown_table(frame: pd.DataFrame) -> str:
@@ -124,6 +132,23 @@ def build_preprocessor() -> ColumnTransformer:
     )
 
 
+def get_auc(pipeline: Pipeline, x_test: pd.DataFrame, y_test: pd.Series) -> float:
+    binary_y_test = (y_test == POSITIVE_LABEL).astype(int)
+    model = pipeline.named_steps["model"]
+
+    if hasattr(pipeline, "predict_proba"):
+        positive_class_index = list(model.classes_).index(POSITIVE_LABEL)
+        scores = pipeline.predict_proba(x_test)[:, positive_class_index]
+    elif hasattr(pipeline, "decision_function"):
+        scores = pipeline.decision_function(x_test)
+        if getattr(model, "classes_", [POSITIVE_LABEL])[-1] != POSITIVE_LABEL:
+            scores = -scores
+    else:
+        return np.nan
+
+    return float(roc_auc_score(binary_y_test, scores))
+
+
 def evaluate_models(dataset: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, pd.DataFrame], dict[str, int]]:
     features = dataset[FEATURE_COLUMNS]
     labels = dataset[LABEL_COLUMN]
@@ -160,6 +185,7 @@ def evaluate_models(dataset: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, pd.D
         )
         pipeline.fit(x_train, y_train)
         predictions = pipeline.predict(x_test)
+        auc_score = get_auc(pipeline, x_test, y_test)
 
         matrix = confusion_matrix(y_test, predictions, labels=LABEL_ORDER)
         confusion_matrices[model_name] = pd.DataFrame(
@@ -183,12 +209,13 @@ def evaluate_models(dataset: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, pd.D
                     f1_score(y_test, predictions, average="macro", zero_division=0),
                     4,
                 ),
+                "AUC": round(auc_score, 4) if not np.isnan(auc_score) else np.nan,
             }
         )
 
     metrics_frame = pd.DataFrame(metrics_rows).sort_values(
-        by=["F1-score (Macro)", "Accuracy"],
-        ascending=False,
+        by=["F1-score (Macro)", "Accuracy", "AUC"],
+        ascending=[False, False, False],
     )
     return metrics_frame, confusion_matrices, split_summary
 
@@ -256,7 +283,7 @@ def build_report(
             "## Conclusion",
             (
                 f"- Best model: `{best_row['Model']}` with Accuracy `{best_row['Accuracy']}` "
-                f"and Macro F1 `{best_row['F1-score (Macro)']}`."
+                f"Macro F1 `{best_row['F1-score (Macro)']}`, and AUC `{best_row['AUC']}`."
             ),
             "- These audio features show moderate predictive power for valence, but they are not strong enough for highly reliable emotion classification on their own.",
         ]
