@@ -76,6 +76,11 @@ def preprocess_features(
     return to_dense(x_train_processed), to_dense(x_test_processed)
 
 
+def get_pca_component_range(x_train_processed: np.ndarray) -> range:
+    max_components = min(x_train_processed.shape[0], x_train_processed.shape[1])
+    return range(1, max_components + 1)
+
+
 def get_auc(model: object, x_test: np.ndarray, y_test: pd.Series) -> float:
     binary_y_test = (y_test == POSITIVE_LABEL).astype(int)
 
@@ -132,7 +137,7 @@ def run_experiments() -> pd.DataFrame:
     results = []
 
     # PCA is applied after the baseline preprocessing and before model training.
-    for n_components in [2, 3, 5]:
+    for n_components in get_pca_component_range(x_train_processed):
         pca = PCA(n_components=n_components, random_state=RANDOM_STATE)
         x_train_pca = pca.fit_transform(x_train_processed)
         x_test_pca = pca.transform(x_test_processed)
